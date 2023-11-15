@@ -114,7 +114,7 @@ func Delivery(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 						return tx.Error
 					}
 
-					now := time.Now()
+					now := time.Now().UTC()
 					tx = tx.Exec(`
                         UPDATE order_lines
                         SET ol_delivery_d = ?

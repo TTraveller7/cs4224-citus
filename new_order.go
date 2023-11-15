@@ -241,7 +241,7 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		return nil
 	}
 
-	entryTime := time.Now()
+	entryTime := time.Now().UTC()
 	insertOrderTxn := func() error {
 		return db.Transaction(func(tx *gorm.DB) error {
 			tx = tx.Exec(`
@@ -252,6 +252,15 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 				return tx.Error
 			} else if tx.RowsAffected == 0 {
 				return ErrNoRowsAffected
+			}
+
+			tx = tx.Exec(`
+				UPDATE customer_param
+				SET c_last_o_id = ?
+				WHERE c_w_id = ? AND c_d_id = ? AND c_id = ? AND c_last_o_id < ?
+			`, nextOrderId, wid, did, cid, nextOrderId)
+			if tx.Error != nil {
+				return tx.Error
 			}
 
 			for i, ol := range orderlineOutputs {
