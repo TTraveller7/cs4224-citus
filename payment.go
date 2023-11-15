@@ -134,7 +134,7 @@ func Payment(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scann
 		WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?
 		LIMIT 1
 	`, wid, did, cid)
-	if err := db.Row().Scan(&ci.CWId, &ci.CDId, &ci.CId, &ci.CFirst, &ci.CLast, &ci.CStreet1, &ci.CStreet2, &ci.CCity, &ci.CState, &ci.CZip, &ci.CPhone, &ci.CSince, &ci.CCredit, &ci.CCreditLim, &ci.CDiscount, &ci.CData); err != nil {
+	if err := db.Row().Scan(&ci.CWId, &ci.CDId, &ci.CId, &ci.CFirst, &ci.CMiddle, &ci.CLast, &ci.CStreet1, &ci.CStreet2, &ci.CCity, &ci.CState, &ci.CZip, &ci.CPhone, &ci.CSince, &ci.CCredit, &ci.CCreditLim, &ci.CDiscount, &ci.CData); err != nil {
 		logs.Printf("get customer_info failed: %v", err)
 		return nil
 	}
