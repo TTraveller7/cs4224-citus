@@ -142,12 +142,12 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		var price float64
 		var name string
 		err = db.Raw(`
-			SELECT i_price, i_name FROM items \
-			WHERE i_id = ? \
+			SELECT i_price, i_name FROM items
+			WHERE i_id = ? 
 			LIMIT 1 
 		`, ol.ItemId).Row().Scan(&price, &name)
 		if err != nil {
-			logs.Printf("get i_price. i_name failed: %v", err)
+			logs.Printf("get i_price, i_name failed: %v", err)
 			return nil
 		}
 		itemInfo := &ItemInfo{
