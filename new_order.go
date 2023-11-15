@@ -89,9 +89,7 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 				SELECT d_next_o_id
 				FROM district_order_id
 				WHERE d_id = ? AND d_w_id = ?
-				LIMIT 1
-				FOR UPDATE
-			`, did, wid).Row().Scan(&nextOrderId); err != nil {
+				LIMIT 1`, did, wid).Row().Scan(&nextOrderId); err != nil {
 				return err
 			}
 
@@ -185,8 +183,7 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 					SELECT s_qty, s_ytd, s_order_cnt, s_remote_cnt
 					FROM stocks 
 					WHERE s_w_id = ? AND s_i_id = ? 
-					LIMIT 1 
-					FOR UPDATE`, ol.SupplyWid, ol.ItemId).Row().Scan(&quantity, &ytd, &orderCount, &remoteCount)
+					LIMIT 1`, ol.SupplyWid, ol.ItemId).Row().Scan(&quantity, &ytd, &orderCount, &remoteCount)
 				if err != nil {
 					return err
 				}
