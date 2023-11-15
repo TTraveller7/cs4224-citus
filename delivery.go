@@ -18,9 +18,9 @@ func Delivery(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		FROM district_info
 		WHERE d_w_id = ?
 		LIMIT 10000
-	`, wid)
-	if err := db.Scan(&dids).Error; err != nil {
-		logs.Printf("get all d_id failed: %v", err)
+	`, wid).Scan(&dids)
+	if db.Error != nil {
+		logs.Printf("get all d_id failed: %v", db.Error)
 		return nil
 	}
 
