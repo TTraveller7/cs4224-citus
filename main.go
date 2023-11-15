@@ -100,6 +100,8 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 			err = NewOrder(logs, db, words, scanner, &lineCount)
 		case "P":
 			err = Payment(logs, db, words, scanner, &lineCount)
+		case "D":
+			err = Delivery(logs, db, words, scanner, &lineCount)
 		}
 
 		if err != nil {
