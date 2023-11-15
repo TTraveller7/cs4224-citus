@@ -65,9 +65,9 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 			return fmt.Errorf(errMsg)
 		}
 		orderlineInput := &OrderlineInput{
-			ItemId:    SafeParseInt(words[0]),
-			SupplyWid: SafeParseInt(words[1]),
-			Quantity:  SafeParseInt(words[2]),
+			ItemId:    SafeParseInt(orderlineWords[0]),
+			SupplyWid: SafeParseInt(orderlineWords[1]),
+			Quantity:  SafeParseInt(orderlineWords[2]),
 		}
 		orderlineInputs = append(orderlineInputs, orderlineInput)
 	}
