@@ -20,23 +20,23 @@ var (
 func main() {
 	args := os.Args
 
-	if len(args) < 6 {
+	if len(args) < 5 {
 		logs.Printf("not enough arguments: args=%+v", args)
 		return
 	}
 	logs.Printf("main starting. Arguments: %+v", args)
 
-	taskIndexStr := os.Args[0]
+	taskIndexStr := os.Args[2]
 	taskIndex, err := strconv.ParseInt(taskIndexStr, 10, 64)
 	if err != nil {
 		logs.Printf("convert task index failed: %v", err)
 		return
 	}
-	ip := os.Args[1]
-	filePaths := os.Args[2:]
+	ip := os.Args[3]
+	filePaths := os.Args[4:]
 
 	// TODO
-	dsn := fmt.Sprintf("host=%s user=cs4224s password= dbname=project port=9920 sslmode=disable", ip)
+	dsn := fmt.Sprintf("host=%s user=cs4224s password= dbname=project port=5115 sslmode=disable", ip)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logs.Printf("open postgres client failed: %v", err)
