@@ -14,13 +14,14 @@ import (
 )
 
 var (
-	logs *log.Logger = log.New(os.Stdout, "", 0)
+	logs          *log.Logger = log.New(os.Stdout, "", 0)
+	routineNumber int         = 5
 )
 
 func main() {
 	args := os.Args
 
-	if len(args) < 5 {
+	if len(args) < 4+routineNumber {
 		logs.Printf("not enough arguments: args=%+v", args)
 		return
 	}
@@ -46,7 +47,7 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	for i := 0; i < 1; i++ {
+	for i := 0; i < routineNumber; i++ {
 		wg.Add(1)
 
 		routineIndex := i + int(taskIndex)
