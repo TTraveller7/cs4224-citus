@@ -298,11 +298,13 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		return nil
 	}
 
-	logs.Printf("c_w_id: %v, c_d_id: %v, c_id: %v, c_last: %v, c_credit: %v, c_discount: %v", wid, did, cid, cLast, cCredit, cDiscount)
-	logs.Printf("o_id: %v, o_entry_d: %v", nextOrderId, entryTime)
-	logs.Printf("num_items: %v, total_amount: %v", numOfItems, totalAmount)
+	sb := strings.Builder{}
+	sb.WriteString(fmt.Sprintf("c_w_id: %v, c_d_id: %v, c_id: %v, c_last: %v, c_credit: %v, c_discount: %v\n", wid, did, cid, cLast, cCredit, cDiscount))
+	sb.WriteString(fmt.Sprintf("o_id: %v, o_entry_d: %v\n", nextOrderId, entryTime))
+	sb.WriteString(fmt.Sprintf("num_items: %v, total_amount: %v\n", numOfItems, totalAmount))
 	for _, ol := range orderlineOutputs {
-		logs.Printf("item_numer: %v, i_name: %v, supplier_warehouse: %v, quantity: %v, ol_amount: %v, s_quantity: %v", ol.ItemId, ol.Name, ol.SupplyWid, ol.OrderlineQuantity, ol.ItemAmount, ol.Quantity)
+		sb.WriteString(fmt.Sprintf("item_numer: %v, i_name: %v, supplier_warehouse: %v, quantity: %v, ol_amount: %v, s_quantity: %v\n", ol.ItemId, ol.Name, ol.SupplyWid, ol.OrderlineQuantity, ol.ItemAmount, ol.Quantity))
 	}
+	logs.Printf(sb.String())
 	return nil
 }
