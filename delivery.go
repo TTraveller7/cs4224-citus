@@ -109,7 +109,7 @@ func Delivery(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
                         UPDATE delivery_cursor
                         SET next_delivery_o_id = ?
                         WHERE w_id = ? AND d_id = ? AND next_delivery_o_id < ?
-                    `, wid, did, oidPtr+1)
+                    `, oidPtr+1, wid, did, oidPtr+1)
 					if tx.Error != nil {
 						return tx.Error
 					}
