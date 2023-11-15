@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var ErrNoRowsAffected = fmt.Errorf("update order id affected 0 rows")
+
 func SafeParseInt(s string) int {
 	res, _ := strconv.ParseInt(s, 10, 64)
 	return int(res)
