@@ -127,26 +127,26 @@ func Payment(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scann
 		return nil
 	}
 
-	ci := &CustomerInfo{}
+	ci := CustomerInfo{}
 	db = db.Raw(`
 		SELECT c_w_id, c_d_id, c_id, c_first, c_middle, c_last, c_street_1, c_street_2, c_city, c_state, c_zip, c_phone, c_since, c_credit, c_credit_lim, c_discount, c_data
 		FROM customer_info
 		WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?
 		LIMIT 1
 	`, wid, did, cid)
-	if err := db.Row().Scan(ci); err != nil {
+	if err := db.Row().Scan(&ci); err != nil {
 		logs.Printf("get customer_info failed: %v", err)
 		return nil
 	}
 
-	di := &DistrictInfo{}
+	di := DistrictInfo{}
 	db = db.Raw(`
 		SELECT d_id, d_w_id, w_name, w_street_1, w_street_2, w_city, w_state, w_zip, w_tax, d_name, d_street_1, d_street_2, d_city, d_state, d_zip, d_tax 
 		FROM district_info
 		WHERE d_w_id = ? AND d_id = ?
 		LIMIT 1
 	`, wid, did)
-	if err := db.Row().Scan(di); err != nil {
+	if err := db.Row().Scan(&di); err != nil {
 		logs.Printf("get district info failed: %v", err)
 		return nil
 	}
