@@ -44,7 +44,7 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 1; i++ {
 		wg.Add(1)
 
 		routineIndex := i + int(taskIndex)
@@ -52,7 +52,7 @@ func main() {
 		logs.Printf("starting routine #%v", routineIndex)
 		go func() {
 			defer wg.Done()
-			execute(routineIndex, db, filePaths[i])
+			execute(routineIndex, db, filePaths[routineIndex])
 		}()
 	}
 
