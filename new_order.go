@@ -44,10 +44,10 @@ type StockDelta struct {
 }
 
 func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scanner, lineCount *int) error {
-	cid := SafeParseInt(words[0])
-	wid := SafeParseInt(words[1])
-	did := SafeParseInt(words[2])
-	numOfItems := SafeParseInt(words[3])
+	cid := SafeParseInt(words[1])
+	wid := SafeParseInt(words[2])
+	did := SafeParseInt(words[3])
+	numOfItems := SafeParseInt(words[4])
 
 	orderlineInputs := make([]*OrderlineInput, 0, numOfItems)
 	for i := 0; i < int(numOfItems); i++ {
