@@ -73,10 +73,10 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		orderlineInputs = append(orderlineInputs, orderlineInput)
 	}
 
-	isAllLocal := 1
+	isAllLocal := true
 	for _, ol := range orderlineInputs {
 		if ol.SupplyWid != wid {
-			isAllLocal = 0
+			isAllLocal = false
 			break
 		}
 	}
