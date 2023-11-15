@@ -118,7 +118,7 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		FROM district_info 
 		WHERE d_w_id = ? AND d_id = ?
 		LIMIT 1
-	`).Row().Scan(&dTax, &wTax)
+	`, wid, did).Row().Scan(&dTax, &wTax)
 	if err != nil {
 		logs.Printf("get d_tax and w_tax failed: %v", err)
 		return nil

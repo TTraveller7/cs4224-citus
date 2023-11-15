@@ -61,7 +61,7 @@ func main() {
 }
 
 func execute(routineIndex int, db *gorm.DB, filePath string) {
-	logs := log.New(os.Stdout, fmt.Sprintf("[routine #%v]", routineIndex), 0)
+	logs := log.New(os.Stdout, fmt.Sprintf("[routine #%v] ", routineIndex), 0)
 	logs.Printf("starts. filePath=%s", filePath)
 
 	defer func() {
