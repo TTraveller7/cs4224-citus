@@ -18,9 +18,10 @@ type OrderlineInput struct {
 }
 
 type ItemInfo struct {
-	ItemId int
-	Price  float64
-	Name   string
+	ItemId   int
+	Price    float64
+	Name     string
+	DistInfo string
 }
 
 // ol_i_id, i_name, ol_supply_w_id, ol_quantity, item_amount, next_qty
@@ -150,9 +151,23 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 			logs.Printf("get i_price, i_name failed: %v", err)
 			return nil
 		}
+
+		districtStr := strconv.FormatInt(int64(did), 10)
+		if did < 10 {
+			districtStr = "0" + districtStr
+		}
+		q := fmt.Sprintf("SELECT s_dist_%s FROM stock_info_by_district WHERE s_w_id = ? AND s_i_id = ? LIMIT 1", districtStr)
+		var distInfo string
+		err = db.Raw(q, wid, ol.ItemId).Row().Scan(&distInfo)
+		if err != nil {
+			logs.Printf("get dist_info failed: %v", err)
+			return nil
+		}
+
 		itemInfo := &ItemInfo{
-			Price: price,
-			Name:  name,
+			Price:    price,
+			Name:     name,
+			DistInfo: distInfo,
 		}
 		itemIdToItemInfo[ol.ItemId] = itemInfo
 	}
@@ -164,16 +179,14 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 	updateStockTxn := func() error {
 		return db.Transaction(func(db *gorm.DB) error {
 			for _, ol := range orderlineInputs {
-				districtStr := strconv.FormatInt(int64(did), 10)
-				if did < 10 {
-					districtStr = "0" + districtStr
-				}
-				getStockQuery := fmt.Sprintf("SELECT s_qty, s_ytd, s_order_cnt, s_remote_cnt, s_dist_%s\nFROM stocks\nWHERE s_w_id = ? AND s_i_id = ?\nLIMIT 1\nFOR UPDATE", districtStr)
-
 				var quantity, orderCount, remoteCount int
 				var ytd float64
-				var distinfo string
-				err = db.Raw(getStockQuery, ol.SupplyWid, ol.ItemId).Row().Scan(&quantity, &ytd, &orderCount, &remoteCount, &distinfo)
+				err = db.Raw(`
+					SELECT s_qty, s_ytd, s_order_cnt, s_remote_cnt
+					FROM stocks 
+					WHERE s_w_id = ? AND s_i_id = ? 
+					LIMIT 1 
+					FOR UPDATE`, ol.SupplyWid, ol.ItemId).Row().Scan(&quantity, &ytd, &orderCount, &remoteCount)
 				if err != nil {
 					return err
 				}
@@ -208,7 +221,7 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 					OrderlineQuantity: ol.Quantity,
 					ItemAmount:        itemAmount,
 					Quantity:          nextQuantity,
-					DistInfo:          distinfo,
+					DistInfo:          itemInfo.DistInfo,
 				}
 				orderlineOutputs = append(orderlineOutputs, orderlineOutput)
 
@@ -230,9 +243,9 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		return nil
 	}
 
+	entryTime := time.Now()
 	insertOrderTxn := func() error {
 		return db.Transaction(func(db *gorm.DB) error {
-			entryTime := time.Now()
 			err := db.Exec(`
 				INSERT INTO orders(o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_d) VALUES
 				(?, ?, ?, ?, NULL, ?, ?, ?)
@@ -287,5 +300,11 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		return nil
 	}
 
+	logs.Printf("c_w_id: %v, c_d_id: %v, c_id: %v, c_last: %v, c_credit: %v, c_discount: %v", wid, did, cid, cLast, cCredit, cDiscount)
+	logs.Printf("o_id: %v, o_entry_d: %v", nextOrderId, entryTime)
+	logs.Printf("num_items: %v, total_amount: %v", numOfItems, totalAmount)
+	for _, ol := range orderlineOutputs {
+		logs.Printf("item_numer: %v, i_name: %v, supplier_warehouse: %v, quantity: %v, ol_amount: %v, s_quantity: %v", ol.ItemId, ol.Name, ol.SupplyWid, ol.OrderlineQuantity, ol.ItemAmount, ol.Quantity)
+	}
 	return nil
 }
