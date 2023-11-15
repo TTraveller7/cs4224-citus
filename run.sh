@@ -1,4 +1,8 @@
 #!/bin/bash
+#SBATCH -o /home/stuproj/cs4224s/logs/slog.%J.out
+#SBATCH -p long
+#SBATCH --time 12:00:00
+#SBATCH -c 5
 
 CITUS_EXEC_PATH=$1
 CPU_TYPE=$(srun dpkg --print-architecture)
@@ -13,4 +17,5 @@ else
 	exit 1
 fi
 
+export GOMAXPROCS=5
 srun $CITUS_EXEC_PATH $@

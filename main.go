@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -25,7 +26,7 @@ func main() {
 		logs.Printf("not enough arguments: args=%+v", args)
 		return
 	}
-	logs.Printf("main starting. Arguments: %+v", args)
+	logs.Printf("main starting. Arguments: %+v, NumOfCPU:%v", args, runtime.NumCPU())
 
 	taskIndexStr := os.Args[2]
 	taskIndex, err := strconv.ParseInt(taskIndexStr, 10, 64)
