@@ -16,7 +16,7 @@ import (
 
 var (
 	logs          *log.Logger = log.New(os.Stdout, "", 0)
-	routineNumber int         = 1
+	routineNumber int         = 5
 )
 
 func main() {
