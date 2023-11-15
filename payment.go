@@ -128,14 +128,14 @@ func Payment(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scann
 	}
 
 	ci := &CustomerInfo{}
-	db = db.Where("c_w_id = ? AND c_d_id = ? AND c_id = ?", wid, did, cid).First(ci)
+	db = db.Table("customer_info").Where("c_w_id = ? AND c_d_id = ? AND c_id = ?", wid, did, cid).First(ci)
 	if db.Error != nil {
 		logs.Printf("get customer_info failed: %v", db.Error)
 		return nil
 	}
 
 	di := &DistrictInfo{}
-	db = db.Where("d_w_id = ? AND d_id = ?", wid, did).First(di)
+	db = db.Table("district_info").Where("d_w_id = ? AND d_id = ?", wid, did).First(di)
 	if db.Error != nil {
 		logs.Printf("get district info failed: %v", db.Error)
 		return nil
