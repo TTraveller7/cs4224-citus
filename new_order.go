@@ -85,22 +85,23 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 	var nextOrderId int
 	updateOrderIdTxn := func() error {
 		return db.Transaction(func(tx *gorm.DB) error {
-			if err := db.Raw(`
+			tx = tx.Raw(`
 				SELECT d_next_o_id
 				FROM district_order_id
 				WHERE d_id = ? AND d_w_id = ?
-				LIMIT 1`, did, wid).Row().Scan(&nextOrderId); err != nil {
+				LIMIT 1`, did, wid)
+			if err := tx.Row().Scan(&nextOrderId); err != nil {
 				return err
 			}
 
-			err := db.Exec(`
+			tx = tx.Exec(`
 				UPDATE district_order_id
 				SET d_next_o_id = ?
 				WHERE d_id = ? AND d_w_id = ?
-			`, nextOrderId+1, did, wid).Error
-			if err == nil {
-				return err
-			} else if db.RowsAffected == 0 {
+			`, nextOrderId+1, did, wid)
+			if tx.Error != nil {
+				return tx.Error
+			} else if tx.RowsAffected == 0 {
 				return ErrNoRowsAffected
 			}
 			return nil
@@ -112,26 +113,26 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 	}
 
 	var dTax, wTax float64
-	err := db.Raw(`
+	db = db.Raw(`
 		SELECT d_tax, w_tax 
 		FROM district_info 
 		WHERE d_w_id = ? AND d_id = ?
 		LIMIT 1
-	`, wid, did).Row().Scan(&dTax, &wTax)
-	if err != nil {
+	`, wid, did)
+	if err := db.Row().Scan(&dTax, &wTax); err != nil {
 		logs.Printf("get d_tax and w_tax failed: %v", err)
 		return nil
 	}
 
 	var cDiscount float64
 	var cLast, cCredit string
-	err = db.Raw(`
+	db = db.Raw(`
 		SELECT c_discount, c_last, c_credit
 		FROM customer_info 
 		WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?
 		LIMIT 1
-	`, wid, did, cid).Row().Scan(&cDiscount, &cLast, &cCredit)
-	if err != nil {
+	`, wid, did, cid)
+	if err := db.Row().Scan(&cDiscount, &cLast, &cCredit); err != nil {
 		logs.Printf("get c_discount, c_last, c_credit failed: %v", err)
 		return nil
 	}
@@ -140,12 +141,12 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 	for _, ol := range orderlineInputs {
 		var price float64
 		var name string
-		err = db.Raw(`
+		db = db.Raw(`
 			SELECT i_price, i_name FROM items
 			WHERE i_id = ? 
 			LIMIT 1 
-		`, ol.ItemId).Row().Scan(&price, &name)
-		if err != nil {
+		`, ol.ItemId)
+		if err := db.Row().Scan(&price, &name); err != nil {
 			logs.Printf("get i_price, i_name failed: %v", err)
 			return nil
 		}
@@ -156,8 +157,8 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		}
 		q := fmt.Sprintf("SELECT s_dist_%s FROM stock_info_by_district WHERE s_w_id = ? AND s_i_id = ? LIMIT 1", districtStr)
 		var distInfo string
-		err = db.Raw(q, wid, ol.ItemId).Row().Scan(&distInfo)
-		if err != nil {
+		db = db.Raw(q, wid, ol.ItemId)
+		if err := db.Row().Scan(&distInfo); err != nil {
 			logs.Printf("get dist_info failed: %v", err)
 			return nil
 		}
@@ -175,16 +176,16 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 	orderlineOutputs := make([]*OrderlineOutput, 0)
 	stockDeltas := make([]*StockDelta, 0)
 	updateStockTxn := func() error {
-		return db.Transaction(func(db *gorm.DB) error {
+		return db.Transaction(func(tx *gorm.DB) error {
 			for _, ol := range orderlineInputs {
 				var quantity, orderCount, remoteCount int
 				var ytd float64
-				err = db.Raw(`
+				tx = tx.Raw(`
 					SELECT s_qty, s_ytd, s_order_cnt, s_remote_cnt
 					FROM stocks 
 					WHERE s_w_id = ? AND s_i_id = ? 
-					LIMIT 1`, ol.SupplyWid, ol.ItemId).Row().Scan(&quantity, &ytd, &orderCount, &remoteCount)
-				if err != nil {
+					LIMIT 1`, ol.SupplyWid, ol.ItemId)
+				if err := tx.Row().Scan(&quantity, &ytd, &orderCount, &remoteCount); err != nil {
 					return err
 				}
 				nextQuantity := ol.Quantity + quantity
@@ -197,14 +198,14 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 				if ol.SupplyWid != wid {
 					nextRemoteCount++
 				}
-				err = db.Exec(`
+				tx = tx.Exec(`
 					UPDATE stocks
 					SET s_qty = ?, s_ytd = ?, s_order_cnt = ?, s_remote_cnt = ?
 					WHERE s_w_id = ? AND s_i_id = ?
-				`, nextQuantity, nextYtd, nextOrderCount, nextRemoteCount, ol.SupplyWid, ol.ItemId).Error
-				if err != nil {
-					return err
-				} else if db.RowsAffected == 0 {
+				`, nextQuantity, nextYtd, nextOrderCount, nextRemoteCount, ol.SupplyWid, ol.ItemId)
+				if tx.Error != nil {
+					return tx.Error
+				} else if tx.RowsAffected == 0 {
 					return ErrNoRowsAffected
 				}
 				itemInfo := itemIdToItemInfo[ol.ItemId]
@@ -242,27 +243,27 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 
 	entryTime := time.Now()
 	insertOrderTxn := func() error {
-		return db.Transaction(func(db *gorm.DB) error {
-			err := db.Exec(`
+		return db.Transaction(func(tx *gorm.DB) error {
+			tx = tx.Exec(`
 				INSERT INTO orders(o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_d) VALUES
 				(?, ?, ?, ?, NULL, ?, ?, ?)
-			`, wid, did, nextOrderId, cid, numOfItems, isAllLocal, entryTime).Error
-			if err != nil {
-				return err
-			} else if db.RowsAffected == 0 {
+			`, wid, did, nextOrderId, cid, numOfItems, isAllLocal, entryTime)
+			if tx.Error != nil {
+				return tx.Error
+			} else if tx.RowsAffected == 0 {
 				return ErrNoRowsAffected
 			}
 
 			for i, ol := range orderlineOutputs {
-				err = db.Exec(`
+				tx = tx.Exec(`
 					INSERT INTO order_lines(ol_w_id, ol_d_id, ol_o_id, ol_number, ol_i_id, ol_i_name,
 						ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity, ol_dist_info) VALUES
 						(?, ?, ?, ?, ?, ?,
 						NULL, ?, ?, ?, ?)
-				`, wid, did, nextOrderId, i+1, ol.ItemId, ol.Name, ol.ItemAmount, ol.SupplyWid, ol.Quantity, ol.DistInfo).Error
-				if err != nil {
-					return err
-				} else if db.RowsAffected == 0 {
+				`, wid, did, nextOrderId, i+1, ol.ItemId, ol.Name, ol.ItemAmount, ol.SupplyWid, ol.Quantity, ol.DistInfo)
+				if tx.Error != nil {
+					return tx.Error
+				} else if tx.RowsAffected == 0 {
 					return ErrNoRowsAffected
 				}
 			}
@@ -273,16 +274,16 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 		logs.Printf("insert order failed: %v", err)
 
 		revertStockTxn := func() error {
-			return db.Transaction(func(db *gorm.DB) error {
+			return db.Transaction(func(tx *gorm.DB) error {
 				for _, stockDelta := range stockDeltas {
-					err = db.Exec(`
+					tx = tx.Exec(`
 					UPDATE stocks 
 					SET s_qty = s_qty - ?, s_ytd = s_ytd - ?, s_order_cnt = s_order_cnt - ?, s_remote_cnt = s_remote_cnt - ? 
 					WHERE s_w_id = ? AND s_i_id = ?
-					`, stockDelta.Quantity, stockDelta.Ytd, stockDelta.OrderCount, stockDelta.RemoteCount, stockDelta.SupplyWid, stockDelta.ItemId).Error
-					if err != nil {
-						return err
-					} else if db.RowsAffected == 0 {
+					`, stockDelta.Quantity, stockDelta.Ytd, stockDelta.OrderCount, stockDelta.RemoteCount, stockDelta.SupplyWid, stockDelta.ItemId)
+					if tx.Error != nil {
+						return tx.Error
+					} else if tx.RowsAffected == 0 {
 						return ErrNoRowsAffected
 					}
 				}

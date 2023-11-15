@@ -11,7 +11,6 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var (
@@ -39,7 +38,7 @@ func main() {
 	// TODO
 	dsn := fmt.Sprintf("host=%s user=cs4224s password= dbname=project port=5115 sslmode=disable", ip)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		// Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		logs.Printf("open postgres client failed: %v", err)
