@@ -157,7 +157,7 @@ func Delivery(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 			}
 			if err := Retry(deliverToDistrictTxn); err != nil {
 				logs.Printf("deliver to district failed: %v", err)
-				return nil
+				continue
 			}
 			if updated {
 				break
