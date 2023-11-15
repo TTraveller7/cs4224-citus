@@ -89,10 +89,7 @@ func Payment(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scann
 			return nil
 		})
 	}
-	if err := Retry(updateWYtdTxn); err != nil {
-		logs.Printf("update w_ytd failed: %v", err)
-		return nil
-	}
+	Retry(updateWYtdTxn)
 
 	// update dytd
 	updateDYtdTxn := func() error {
@@ -122,10 +119,7 @@ func Payment(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scann
 			return nil
 		})
 	}
-	if err := Retry(updateDYtdTxn); err != nil {
-		logs.Printf("update d_ytd failed: %v", err)
-		return nil
-	}
+	Retry(updateDYtdTxn)
 
 	ci := CustomerInfo{}
 	db = db.Raw(`
