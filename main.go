@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -63,7 +64,24 @@ func main() {
 		}()
 	}
 
+	isCompensate := taskIndex == 0
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	if isCompensate {
+		go func() {
+			Compensate(ctx, db)
+		}()
+	}
+
 	wg.Wait()
+
+	if isCompensate {
+		timer := time.NewTimer(5 * time.Minute)
+		<-timer.C
+		cancelFunc()
+	}
+
+	time.Sleep(10 * time.Second)
+
 	logs.Printf("all routines joined. main exits normally")
 }
 

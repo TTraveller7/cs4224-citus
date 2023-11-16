@@ -17,5 +17,5 @@ else
 	exit 1
 fi
 
-export GOMAXPROCS=5
+export GOMAXPROCS=6
 srun $CITUS_EXEC_PATH $@
