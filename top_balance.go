@@ -128,7 +128,7 @@ func TopBalance(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 			}
 		}
 
-		sb.WriteString(fmt.Sprintf("%s, %s, %s, %s, %s, %v", cinfo.CFirst, cinfo.CMiddle, cinfo.CLast, wName, dName, cinfo.CBalance))
+		sb.WriteString(fmt.Sprintf("%s, %s, %s, %s, %s, %v\n", cinfo.CFirst, cinfo.CMiddle, cinfo.CLast, wName, dName, cinfo.CBalance))
 	}
 	logs.Printf(sb.String())
 
