@@ -27,7 +27,7 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	db.Raw(`
 		SELECT c_first, c_middle, c_last
 		FROM customer_info
-		WHERE c_w_id = %s AND c_d_id = %s AND c_id = %s
+		WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?
 		LIMIT 1
 	`, wid, did, cid)
 	if err := db.Row().Scan(&cFirst, &cMiddle, &cLast); err != nil {
@@ -44,7 +44,7 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 			tx = tx.Raw(`
 				SELECT c_balance, c_last_o_id
 				FROM customer_param
-				WHERE c_w_id = %s AND c_d_id = %s AND c_id = %s
+				WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?
 				LIMIT 1
 			`, wid, did, cid)
 			if err := tx.Row().Scan(&balance, &lastOrderId); err != nil {
@@ -54,7 +54,7 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 			tx = tx.Raw(`
 				SELECT o_carrier_id, o_ol_cnt, o_entry_d
 				FROM orders
-				WHERE o_w_id = %s AND o_d_id = %s AND o_id = %s
+				WHERE o_w_id = ? AND o_d_id = ? AND o_id = ?
 				LIMIT 1
 			`, wid, did, lastOrderId)
 			if err := tx.Row().Scan(&carrierId, &olCount, &entryDate); err != nil {
@@ -64,9 +64,9 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 			tx = tx.Raw(`
 				SELECT ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity
 				FROM order_lines
-				WHERE ol_w_id = %s AND ol_d_id = %s AND ol_o_id = %s
-				LIMIT %s
-			`)
+				WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ?
+				LIMIT ?
+			`, wid, did)
 			rows, err := tx.Rows()
 			if err != nil {
 				return err
