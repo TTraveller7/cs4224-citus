@@ -92,7 +92,7 @@ func RelatedCustomer(logs *log.Logger, db *gorm.DB, words []string, scanner *buf
 			continue
 		}
 		cidSet[cid] = true
-		sb.WriteString(fmt.Sprintf("related customer identifier: w_id: %v, d_id: %v. c_id: %v", co.Wid, co.Did, cid))
+		sb.WriteString(fmt.Sprintf("related customer identifier: w_id: %v, d_id: %v. c_id: %v\n", co.Wid, co.Did, cid))
 	}
 	logs.Printf(sb.String())
 	return nil
