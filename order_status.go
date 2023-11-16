@@ -62,7 +62,7 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 			}
 
 			tx = tx.Raw(`
-				SELECT ol_i_id, ol_delivery_d, ol_amount, ol_supply_w_id, ol_quantity
+				SELECT ol_i_id, COALESCE(ol_delivery_d, '0001-01-01 00:00:00'), ol_amount, ol_supply_w_id, ol_quantity
 				FROM order_lines
 				WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ?
 				LIMIT ?
@@ -95,7 +95,11 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	sb.WriteString(fmt.Sprintf("balance: %v\n", balance))
 	sb.WriteString(fmt.Sprintf("o_id: %v, o_entry_d: %v, o_carrier_id: %s\n", lastOrderId, entryDate, carrierIdStr))
 	for _, ol := range orderlineInfos {
-		sb.WriteString(fmt.Sprintf("ol_i_id: %v, ol_supply_w_id: %v, ol_quantity: %v, ol_amount: %v, ol_delivery_d: %v\n", ol.ItemId, ol.SupplyWid, ol.Quantity, ol.Amount, ol.DeliveryDate))
+		deliveryDateStr := fmt.Sprintf("%v", ol.DeliveryDate)
+		if ol.DeliveryDate.IsZero() {
+			deliveryDateStr = ""
+		}
+		sb.WriteString(fmt.Sprintf("ol_i_id: %v, ol_supply_w_id: %v, ol_quantity: %v, ol_amount: %v, ol_delivery_d: %s\n", ol.ItemId, ol.SupplyWid, ol.Quantity, ol.Amount, deliveryDateStr))
 	}
 	logs.Printf(sb.String())
 	return nil
