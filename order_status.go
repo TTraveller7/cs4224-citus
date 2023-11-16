@@ -24,7 +24,7 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	cid := SafeParseInt64(words[3])
 
 	var cFirst, cMiddle, cLast string
-	db.Raw(`
+	db = db.Raw(`
 		SELECT c_first, c_middle, c_last
 		FROM customer_info
 		WHERE c_w_id = ? AND c_d_id = ? AND c_id = ?
