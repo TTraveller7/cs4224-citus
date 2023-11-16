@@ -26,14 +26,14 @@ func SafeParseFloat64(s string) float64 {
 
 func FormatInt64Set(arr []int64) string {
 	sb := strings.Builder{}
-	sb.WriteRune('(')
+	sb.WriteString("(")
 	for i, num := range arr {
 		sb.WriteString(fmt.Sprintf("%v", num))
 		if i != len(arr)-1 {
 			sb.WriteString(",")
 		}
 	}
-	sb.WriteRune(')')
+	sb.WriteString(")")
 	return sb.String()
 }
 
