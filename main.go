@@ -54,11 +54,12 @@ func main() {
 		wg.Add(1)
 
 		routineIndex := i + int(taskIndex)
+		j := i
 
 		logs.Printf("starting routine #%v", routineIndex)
 		go func() {
 			defer wg.Done()
-			execute(routineIndex, db, filePaths[routineIndex])
+			execute(routineIndex, db, filePaths[j])
 		}()
 	}
 
