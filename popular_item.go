@@ -177,7 +177,6 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	total := float64(l)
 	for itemId, count := range popularItemIdtoCount {
 		sb.WriteString(fmt.Sprintf("i_name: %s, percentage of orders in S that contain the popular item: %v", itemIdToItemName[itemId], float64(count)/total*100.0))
-		sb.WriteString(`%`)
 		sb.WriteString("\n")
 	}
 	logs.Printf(sb.String())

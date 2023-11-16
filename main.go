@@ -109,6 +109,8 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 			err = StockLevel(logs, db, words, scanner, &lineCount)
 		case "I":
 			err = PopularItem(logs, db, words, scanner, &lineCount)
+		case "T":
+			err = TopBalance(logs, db, words, scanner, &lineCount)
 		}
 
 		if err != nil {
