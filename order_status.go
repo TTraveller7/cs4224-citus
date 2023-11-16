@@ -36,7 +36,7 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	}
 
 	var balance float64
-	var oid, carrierId, lastOrderId, olCount int64
+	var carrierId, lastOrderId, olCount int64
 	var entryDate time.Time
 	orderlineInfos := make([]*OrderlineInfo, 0)
 	getLastOrderTxn := func() error {
@@ -66,7 +66,7 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 				FROM order_lines
 				WHERE ol_w_id = ? AND ol_d_id = ? AND ol_o_id = ?
 				LIMIT ?
-			`, wid, did)
+			`, wid, did, lastOrderId, olCount)
 			rows, err := tx.Rows()
 			if err != nil {
 				return err
@@ -89,7 +89,7 @@ func OrderStatus(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	sb := strings.Builder{}
 	sb.WriteString(fmt.Sprintf("first name: %s, middle name: %s, last name: %s\n", cFirst, cMiddle, cLast))
 	sb.WriteString(fmt.Sprintf("balance: %v\n", balance))
-	sb.WriteString(fmt.Sprintf("o_id: %v, o_entry_d: %v, o_carrier_id: %v\n", oid, entryDate, carrierId))
+	sb.WriteString(fmt.Sprintf("o_id: %v, o_entry_d: %v, o_carrier_id: %v\n", lastOrderId, entryDate, carrierId))
 	for _, ol := range orderlineInfos {
 		sb.WriteString(fmt.Sprintf("ol_i_id: %v, ol_supply_w_id: %v, ol_quantity: %v, ol_amount: %v, ol_delivery_d: %v\n", ol.ItemId, ol.SupplyWid, ol.Quantity, ol.Amount, ol.DeliveryDate))
 	}
