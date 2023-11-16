@@ -64,7 +64,7 @@ func main() {
 		}()
 	}
 
-	isCompensate := taskIndex == 0
+	isCompensate := taskIndex == 15
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	if isCompensate {
 		go func() {
