@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"database/sql"
 	"log"
 	"time"
 
@@ -72,9 +73,10 @@ func Delivery(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
                 FROM orders
                 WHERE o_w_id = ? AND o_d_id = ? AND o_id = ?
             `, wid, did, oidPtr)
-			if err := db.Row().Scan(&cid); err != nil {
+			if err := db.Row().Scan(&cid); err == sql.ErrNoRows {
+				continue
+			} else if err != nil {
 				logs.Printf("delivery get cid failed: %v", err)
-				return nil
 			}
 
 			updated := false
