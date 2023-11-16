@@ -77,7 +77,7 @@ func TopBalance(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 	}
 	if err := Retry(getTopBalanceCustomerTxn); err != nil {
 		logs.Printf("top balance get customer failed: %v", err)
-		return err
+		return nil
 	}
 
 	sort.Slice(customerInfos, func(i, j int) bool {
@@ -98,14 +98,14 @@ func TopBalance(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 	rows, err = db.Rows()
 	if err != nil {
 		logs.Printf("top balance get customer name failed: %v", err)
-		return err
+		return nil
 	}
 	for rows.Next() {
 		var cid int64
 		var cFirst, cMiddle, cLast string
 		if err := rows.Scan(&cid, &cFirst, &cMiddle, &cLast); err != nil {
 			logs.Printf("top balance scan customer name failed: %v", err)
-			return err
+			return nil
 		}
 		for _, cinfo := range topTenCustomers {
 			if cinfo.Cid == cid {

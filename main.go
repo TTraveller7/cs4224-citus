@@ -125,8 +125,8 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 		}
 
 		if err != nil {
-			logs.Printf("execute command failed: %v. exiting at %s line %v", err, filePath, lineCount)
-			return
+			logs.Printf("execute command failed: %v. file at %s line %v", err, filePath, lineCount)
+			continue
 		}
 
 		end := time.Now()
@@ -136,8 +136,8 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 	}
 
 	routineEnd := time.Now()
-	totalLatency := routineEnd.Sub(routineStart)
-	throughPut := float64(counter) / float64(totalLatency)
+	totalLatency := routineEnd.Sub(routineStart).Seconds()
+	throughPut := float64(counter) / totalLatency
 	avgLatency, _ := stats.Mean(latencies)
 	medianLatency, _ := stats.Median(latencies)
 	nintyFivePercentile, _ := stats.Percentile(latencies, 95.0)

@@ -73,7 +73,8 @@ func Delivery(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
                 WHERE o_w_id = ? AND o_d_id = ? AND o_id = ?
             `, wid, did, oidPtr)
 			if err := db.Row().Scan(&cid); err != nil {
-				return err
+				logs.Printf("delivery get cid failed: %v", err)
+				return nil
 			}
 
 			updated := false

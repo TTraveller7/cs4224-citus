@@ -58,6 +58,7 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 			return fmt.Errorf(errMsg)
 		}
 
+		*lineCount++
 		orderlineCmd := scanner.Text()
 		orderlineWords := strings.Split(orderlineCmd, ",")
 		if len(orderlineWords) < 3 {
