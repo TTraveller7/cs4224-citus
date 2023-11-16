@@ -39,25 +39,27 @@ func TopBalance(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 		logs.Printf("top balance get district failed: %v", err)
 		return err
 	}
+	widSet := make(map[int64]bool, 0)
 	for rows.Next() {
 		district := &TopDistrictInfo{}
 		if err := rows.Scan(&district.Did, &district.Wid, &district.WName, &district.DName); err != nil {
 			logs.Printf("top balance scan district failed: %v", err)
 		}
 		districts = append(districts, district)
+		widSet[district.Wid] = true
 	}
 
 	customerInfos := make([]*TopCustomerInfo, 0)
 	getTopBalanceCustomerTxn := func() error {
 		return db.Transaction(func(tx *gorm.DB) error {
-			for _, d := range districts {
+			for wid := range widSet {
 				tx = tx.Raw(`
 					select c_w_id, c_d_id, c_id, c_balance 
 					from customer_param
 					where c_w_id = ? 
 					order by c_balance 
 					limit 10
-				`, d.Wid)
+				`, wid)
 				rows, err := tx.Rows()
 				if err != nil {
 					return err
