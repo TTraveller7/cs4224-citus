@@ -313,7 +313,7 @@ func NewOrder(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Scan
 	sb.WriteString(fmt.Sprintf("o_id: %v, o_entry_d: %v\n", nextOrderId, entryTime))
 	sb.WriteString(fmt.Sprintf("num_items: %v, total_amount: %v\n", numOfItems, totalAmount))
 	for _, ol := range orderlineOutputs {
-		sb.WriteString(fmt.Sprintf("item_numer: %v, i_name: %v, supplier_warehouse: %v, quantity: %v, ol_amount: %v, s_quantity: %v\n", ol.ItemId, ol.Name, ol.SupplyWid, ol.OrderlineQuantity, ol.ItemAmount, ol.Quantity))
+		sb.WriteString(fmt.Sprintf("item_number: %v, i_name: %v, supplier_warehouse: %v, quantity: %v, ol_amount: %v, s_quantity: %v\n", ol.ItemId, ol.Name, ol.SupplyWid, ol.OrderlineQuantity, ol.ItemAmount, ol.Quantity))
 	}
 	logs.Printf(sb.String())
 	return nil
