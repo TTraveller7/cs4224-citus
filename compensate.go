@@ -91,7 +91,7 @@ func doCompensate(ctx context.Context, log *log.Logger, db *gorm.DB, lastUpdated
 				tx = tx.Raw(`
 					SELECT *
 					FROM payment_history
-					WHERE w_id = %s AND d_id = %s AND created_at > %s
+					WHERE w_id = ? AND d_id = ? AND created_at > ?
 					ORDER BY created_at
 					LIMIT 100
 				`, ptr.Wid, ptr.Did, ptr.Pointer)
@@ -126,8 +126,8 @@ func doCompensate(ctx context.Context, log *log.Logger, db *gorm.DB, lastUpdated
 				if deltaWYtd > 0 {
 					tx = tx.Exec(`
 						UPDATE warehouse_param
-						SET w_ytd = w_ytd + %s
-						WHERE w_id = %s
+						SET w_ytd = w_ytd + ?
+						WHERE w_id = ?
 					`, deltaWYtd, ptr.Wid)
 					if tx.Error != nil {
 						return err
@@ -139,8 +139,8 @@ func doCompensate(ctx context.Context, log *log.Logger, db *gorm.DB, lastUpdated
 				if deltaDYtd > 0 {
 					tx = tx.Exec(`
 						UPDATE district_param
-						SET d_ytd = d_ytd + %s
-						WHERE d_w_id = %s AND d_id = %s
+						SET d_ytd = d_ytd + ?
+						WHERE d_w_id = ? AND d_id = ?
 					`, deltaDYtd, ptr.Wid, ptr.Did)
 					if tx.Error != nil {
 						return err
@@ -155,7 +155,7 @@ func doCompensate(ctx context.Context, log *log.Logger, db *gorm.DB, lastUpdated
 						tx = tx.Exec(`
 							UPDATE payment_history
 							SET is_w_ytd_updated = 1, is_d_ytd_updated = 1
-							WHERE w_id = %s AND d_id = %s AND id = %s
+							WHERE w_id = ? AND d_id = ? AND id = ?
 						`, h.Wid, h.Did, h.PaymentId)
 						if tx.Error != nil {
 							return err
@@ -170,8 +170,8 @@ func doCompensate(ctx context.Context, log *log.Logger, db *gorm.DB, lastUpdated
 
 				tx = tx.Exec(`
 					UPDATE payment_pointer
-					SET pointer = %s
-					WHERE w_id = %s AND d_id = %s
+					SET pointer = ?
+					WHERE w_id = ? AND d_id = ?
 				`, maxCreatedAt, ptr.Wid, ptr.Did)
 				if tx.Error != nil {
 					return err
@@ -195,25 +195,3 @@ func doCompensate(ctx context.Context, log *log.Logger, db *gorm.DB, lastUpdated
 
 	return nextLastUpdated, nil
 }
-
-/**
-def do_compensate_ytd(cur: psycopg.Cursor, w_id, d_id, pointer, offset) -> int:
-    max_created_at = datetime.min
-    for payment_id, w_id, d_id, c_id, amount, is_w_ytd_updated, is_d_ytd_updated, created_at  in payments:
-        cur.execute("""
-                    UPDATE payment_history
-                    SET is_w_ytd_updated = 1, is_d_ytd_updated = 1
-                    WHERE w_id = %s AND d_id = %s AND id = %s
-                    """, (w_id, d_id, payment_id))
-        if created_at > max_created_at:
-            max_created_at = created_at
-    cur.execute("""
-                UPDATE payment_pointer
-                SET pointer = %s
-                WHERE w_id = %s AND d_id = %s
-                """, (max_created_at, w_id, d_id))
-    return len(payments)
-
-
-
-**/
