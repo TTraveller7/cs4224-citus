@@ -1,8 +1,7 @@
 package main
 
-import "time"
-
 const (
-	RetryTimes  = 10
-	BackoffTime = 500 * time.Millisecond
+	RetryTimes     = 5
+	BackoffTimeMin = 500
+	BackOffTimeMax = 1000
 )

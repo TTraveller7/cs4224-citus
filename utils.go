@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"math"
+	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -43,7 +45,14 @@ func Retry(query func() error) (err error) {
 		if err == nil {
 			return nil
 		}
-		time.Sleep(BackoffTime)
+		time.Sleep(GetBackoffTime())
 	}
 	return fmt.Errorf("exceeds retry limit: %v", err)
+}
+
+func GetBackoffTime() time.Duration {
+	dF := rand.Float64()*float64(BackOffTimeMax-BackoffTimeMin) + BackoffTimeMin
+	d := int(math.Round(dF))
+	duration, _ := time.ParseDuration(fmt.Sprintf("%vms", d))
+	return duration
 }
