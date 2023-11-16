@@ -87,7 +87,7 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 			}
 			for rows.Next() {
 				ol := &PopularItemOrderline{}
-				if err := rows.Scan(&ol.OrderId, ol.ItemId, ol.Quantity); err != nil {
+				if err := rows.Scan(&ol.OrderId, &ol.ItemId, &ol.Quantity); err != nil {
 					return err
 				}
 				orderlines = append(orderlines, ol)
