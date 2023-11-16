@@ -55,7 +55,7 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	orderOutputs := make([]*OrderOutput, 0)
 	orderlines := make([]*PopularItemOrderline, 0)
 	cids := make([]int64, 0)
-	itemIds := make([]int64, 0)
+	itemIdSet := make(map[int64]bool, 0)
 	getOrderAndOrderlineTxn := func() error {
 		return db.Transaction(func(tx *gorm.DB) error {
 			tx = tx.Raw(`
@@ -91,6 +91,7 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 					return err
 				}
 				orderlines = append(orderlines, ol)
+				itemIdSet[ol.ItemId] = true
 			}
 			return nil
 		})
@@ -98,6 +99,11 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	if err := Retry(getOrderAndOrderlineTxn); err != nil {
 		logs.Printf("get orders and orderlines failed: %v", err)
 		return nil
+	}
+
+	itemIds := make([]int64, 0, len(itemIdSet))
+	for itemId := range itemIdSet {
+		itemIds = append(itemIds, itemId)
 	}
 
 	for _, o := range orderOutputs {
@@ -168,7 +174,7 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 		}
 		total := float64(l)
 		for itemId, count := range popularItemIdtoCount {
-			sb.WriteString(fmt.Sprintf("i_name: %s, percentage of orders in S that contain the popular item: %v%%", itemIdToItemName[itemId], float64(count)/total*100.0))
+			sb.WriteString(fmt.Sprintf("i_name: %s, percentage of orders in S that contain the popular item: %v%%\n", itemIdToItemName[itemId], float64(count)/total*100.0))
 		}
 	}
 	logs.Printf(sb.String())
