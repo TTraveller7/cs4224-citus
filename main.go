@@ -105,6 +105,8 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 			err = Delivery(logs, db, words, scanner, &lineCount)
 		case "O":
 			err = OrderStatus(logs, db, words, scanner, &lineCount)
+		case "S":
+			err = StockLevel(logs, db, words, scanner, &lineCount)
 		}
 
 		if err != nil {
