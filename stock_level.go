@@ -38,12 +38,11 @@ func StockLevel(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 				return tx.Error
 			}
 
-			itemIdSetStr := FormatInt64Set(itemIds)
 			tx = tx.Raw(`
 				select count(*) 
 				from stocks 
 				where s_w_id=? and s_qty < ? and s_i_id in ?
-			`, wid, t, itemIdSetStr)
+			`, wid, t, itemIds)
 			if err := tx.Row().Scan(&count); err != nil {
 				return err
 			}
