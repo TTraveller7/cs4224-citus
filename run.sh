@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -o /home/stuproj/cs4224s/logs/slog.%J.out
-#SBATCH -p long
-#SBATCH --time 12:00:00
+#SBATCH -p medium
+#SBATCH --time 3:00:00
 #SBATCH -c 5
 
 CITUS_EXEC_PATH=$1
