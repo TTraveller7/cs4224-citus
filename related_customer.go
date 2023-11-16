@@ -25,7 +25,7 @@ func RelatedCustomer(logs *log.Logger, db *gorm.DB, words []string, scanner *buf
 	db = db.Raw(`
 		select o_id 
 		from orders 
-		where o_w_id = %s and o_d_id = %s and o_c_id = %s
+		where o_w_id = ? and o_d_id = ? and o_c_id = ?
 		LIMIT 10000
 	`, wid, did, cid).Scan(&oids)
 	if db.Error != nil {
@@ -39,21 +39,20 @@ func RelatedCustomer(logs *log.Logger, db *gorm.DB, words []string, scanner *buf
 		db = db.Raw(`
 			select ol_i_id 
 			from order_lines
-			where ol_w_id = %s and ol_d_id = %s and ol_o_id = %s
+			where ol_w_id = ? and ol_d_id = ? and ol_o_id = ?
 		`, wid, did, oid).Scan(&itemIds)
 		if db.Error != nil {
 			logs.Printf("related customer get order line item ids failed: %v", db.Error)
 			return nil
 		}
 
-		itemIdSetStr := FormatInt64Set(itemIds)
 		db = db.Raw(`
 			select ol_w_id, ol_d_id, ol_o_id 
 			from order_lines 
-			where ol_w_id != %s and ol_i_id in (%s) 
+			where ol_w_id != ? and ol_i_id in (?) 
 			group by ol_w_id, ol_d_id, ol_o_id 
 			having count(ol_i_id) >= 2
-		`, wid, itemIdSetStr)
+		`, wid, itemIds)
 		rows, err := db.Rows()
 		if err != nil {
 			logs.Printf("related customer get order lines failed: %v", err)

@@ -114,12 +114,11 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 	}
 
 	itemIdToItemName := make(map[int64]string, 0)
-	itemIdSetStr := FormatInt64Set(itemIds)
 	db = db.Raw(`
 		select i_id, i_name 
 		from items 
 		where i_id in ?
-	`, itemIdSetStr)
+	`, itemIds)
 	rows, err := db.Rows()
 	if err != nil {
 		logs.Printf("popular item get item names failed: %v", err)

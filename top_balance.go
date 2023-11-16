@@ -92,8 +92,7 @@ func TopBalance(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 		SELECT c_id, c_first, c_middle, c_last 
 		FROM customer_info
 		WHERE c_id IN ?
-		LIMIT 1
-	`, FormatInt64Set(cids))
+	`, cids)
 	rows, err = db.Rows()
 	if err != nil {
 		logs.Printf("top balance get customer name failed: %v", err)
