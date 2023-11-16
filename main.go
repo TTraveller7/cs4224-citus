@@ -144,7 +144,7 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 	nintyFivePercentile, _ := stats.Percentile(latencies, 95.0)
 	nintyNinePercentile, _ := stats.Percentile(latencies, 99.0)
 
-	metricsFile, err := os.OpenFile(fmt.Sprintf("/home/stuproj/cs4224s/%v_metrics.txt", routineIndex), os.O_RDWR|os.O_TRUNC, 0777)
+	metricsFile, err := os.OpenFile(fmt.Sprintf("/home/stuproj/cs4224s/%v_metrics.txt", routineIndex), os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0777)
 	if err != nil {
 		logs.Printf("open metrics file failed: %v", err)
 		return
