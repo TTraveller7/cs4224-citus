@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
-	"strings"
 
 	"gorm.io/gorm"
 )
@@ -22,7 +20,7 @@ func StockLevel(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 			tx = tx.Raw(`
 				select d_next_o_id
 				from district_order_id
-				where d_w_id=%s and d_id=%s
+				where d_w_id=? and d_id=?
 			`, wid, did)
 			if err := tx.Row().Scan(&nextOrderId); err != nil {
 				return err
@@ -34,25 +32,18 @@ func StockLevel(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 			tx = tx.Raw(`
 				select ol_i_id 
 				from order_lines
-				where ol_w_id=%s and ol_d_id = %s and ol_o_id between %s and %s
+				where ol_w_id=? and ol_d_id = ? and ol_o_id between ? and ?
 			`, wid, did, lStart, lEnd).Scan(&itemIds)
 			if tx.Error != nil {
 				return tx.Error
 			}
 
-			itemIdsSb := strings.Builder{}
-			for i, itemId := range itemIds {
-				itemIdsSb.WriteString(fmt.Sprintf("%v", itemId))
-				if i != len(itemIds)-1 {
-					itemIdsSb.WriteString(",")
-				}
-			}
-
+			itemIdSetStr := FormatInt64Set(itemIds)
 			tx = tx.Raw(`
 				select count(*) 
 				from stocks 
-				where s_w_id=%s and s_qty < %s and s_i_id in (%s)
-			`, wid, t, itemIdsSb.String())
+				where s_w_id=? and s_qty < ? and s_i_id in ?
+			`, wid, t, itemIdSetStr)
 			if err := tx.Row().Scan(&count); err != nil {
 				return err
 			}

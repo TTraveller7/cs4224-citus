@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -21,6 +22,19 @@ func SafeParseInt64(s string) int64 {
 func SafeParseFloat64(s string) float64 {
 	res, _ := strconv.ParseFloat(s, 64)
 	return res
+}
+
+func FormatInt64Set(arr []int64) string {
+	sb := strings.Builder{}
+	sb.WriteRune('(')
+	for i, num := range arr {
+		sb.WriteString(fmt.Sprintf("%v", num))
+		if i != len(arr)-1 {
+			sb.WriteString(",")
+		}
+	}
+	sb.WriteRune(')')
+	return sb.String()
 }
 
 func Retry(query func() error) (err error) {
