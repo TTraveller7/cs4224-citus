@@ -9,7 +9,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/montanaflynn/stats"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -86,7 +88,15 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 
 	lineCount := 0
 	scanner := bufio.NewScanner(file)
+
+	// metrics
+	var counter int64 = 0
+	latencies := make([]float64, 0)
+	routineStart := time.Now()
+
 	for scanner.Scan() {
+		start := time.Now()
+
 		lineCount++
 		cmd := scanner.Text()
 		words := strings.Split(cmd, ",")
@@ -119,7 +129,25 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 			logs.Printf("execute command failed: %v. exiting at %s line %v", err, filePath, lineCount)
 			return
 		}
+
+		end := time.Now()
+		latency := end.Sub(start)
+		latencies = append(latencies, float64(latency.Milliseconds()))
+		counter++
 	}
 
-	logs.Printf("exits normally")
+	routineEnd := time.Now()
+	totalLatency := routineEnd.Sub(routineStart).Milliseconds()
+	throughPut := float64(counter) / float64(totalLatency)
+	avgLatency, _ := stats.Mean(latencies)
+	medianLatency, _ := stats.Median(latencies)
+	nintyFivePercentile, _ := stats.Percentile(latencies, 95.0)
+	nintyNinePercentile, _ := stats.Percentile(latencies, 99.0)
+
+	metricsFile, err := os.OpenFile(fmt.Sprintf("/home/stuproj/cs4224s/%v_metrics.txt", routineIndex), os.O_RDWR|os.O_TRUNC, 0777)
+	if err != nil {
+		logs.Printf("open metrics file failed: %v", err)
+		return
+	}
+	metricsFile.Write([]byte(fmt.Sprintf("%v %v %.2f %.2f %.2f %.2f %.2f", counter, totalLatency, throughPut, avgLatency, medianLatency, nintyFivePercentile, nintyNinePercentile)))
 }
