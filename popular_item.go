@@ -157,6 +157,7 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 			}
 		}
 
+		o.PopularItemQuantity = maxQuantity
 		o.PopularItemIds = popularItemIds
 		for _, itemId := range popularItemIds {
 			popularItemIdtoCount[itemId] = popularItemIdtoCount[itemId] + 1
@@ -172,10 +173,12 @@ func PopularItem(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.S
 		for _, itemId := range o.PopularItemIds {
 			sb.WriteString(fmt.Sprintf("i_name: %s, quantity: %v\n", itemIdToItemName[itemId], o.PopularItemQuantity))
 		}
-		total := float64(l)
-		for itemId, count := range popularItemIdtoCount {
-			sb.WriteString(fmt.Sprintf("i_name: %s, percentage of orders in S that contain the popular item: %v%%\n", itemIdToItemName[itemId], float64(count)/total*100.0))
-		}
+	}
+	total := float64(l)
+	for itemId, count := range popularItemIdtoCount {
+		sb.WriteString(fmt.Sprintf("i_name: %s, percentage of orders in S that contain the popular item: %v", itemIdToItemName[itemId], float64(count)/total*100.0))
+		sb.WriteString(`%`)
+		sb.WriteString("\n")
 	}
 	logs.Printf(sb.String())
 
