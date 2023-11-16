@@ -137,7 +137,7 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 	}
 
 	routineEnd := time.Now()
-	totalLatency := routineEnd.Sub(routineStart).Milliseconds()
+	totalLatency := routineEnd.Sub(routineStart)
 	throughPut := float64(counter) / float64(totalLatency)
 	avgLatency, _ := stats.Mean(latencies)
 	medianLatency, _ := stats.Median(latencies)
