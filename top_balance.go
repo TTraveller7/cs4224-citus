@@ -57,7 +57,7 @@ func TopBalance(logs *log.Logger, db *gorm.DB, words []string, scanner *bufio.Sc
 					select c_w_id, c_d_id, c_id, c_balance 
 					from customer_param
 					where c_w_id = ? 
-					order by c_balance 
+					order by c_balance desc 
 					limit 10
 				`, wid)
 				rows, err := tx.Rows()

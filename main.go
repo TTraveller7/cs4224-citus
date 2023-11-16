@@ -111,6 +111,8 @@ func execute(routineIndex int, db *gorm.DB, filePath string) {
 			err = PopularItem(logs, db, words, scanner, &lineCount)
 		case "T":
 			err = TopBalance(logs, db, words, scanner, &lineCount)
+		case "R":
+			err = RelatedCustomer(logs, db, words, scanner, &lineCount)
 		}
 
 		if err != nil {
